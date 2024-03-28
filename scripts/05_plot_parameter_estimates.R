@@ -31,8 +31,6 @@ mixed_df<- bind_rows(
                               "(Intercept)" = "Intercept"))
 
 # plot
-#https://waldyrious.net/viridis-palette-generator/
-
 ggplot(mixed_df, aes(y=term, x=estimate, group=Model))+
     geom_pointrange(aes(xmin=conf.low,
                         xmax=conf.high,
@@ -45,7 +43,7 @@ ggplot(mixed_df, aes(y=term, x=estimate, group=Model))+
     geom_vline(xintercept=0, linetype="dashed", linewidth=1)+
     scale_shape_manual(values=c(22,23),
                        breaks=c("Mechanical removal", "Prescribed burning"))+
-    scale_color_manual(values = c("#fc9f07", "#d44842"),
+    scale_color_manual(values = c("#fc9f07", "#d44842"), #https://waldyrious.net/viridis-palette-generator/
                        breaks=c("Mechanical removal", "Prescribed burning"))+
     xlab("Log odds estimate") +
     ylab("")+
