@@ -123,4 +123,11 @@ table(dat90_20$county2)
 #                                 nrd == "Upper Loup" ~ 0,
 #                                 TRUE ~ 1))
 
+
 #write.csv(dat90_20,"data/processed/ProducerDF_TreeCoverChangeCounty.csv", row.names=F)
+
+## removing NAs
+dat90_20_nas<-na.omit(dat90_20%>%
+                          select(uniqueID,trees1_9020, trees100_9020, group_involve2, b_burn, b_remo))
+
+#write.csv(dat90_20_nas,"data/processed/ProducerDF_TreeCoverChangeCounty_NAsRemoved.csv", row.names=F)
