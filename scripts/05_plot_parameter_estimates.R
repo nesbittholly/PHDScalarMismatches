@@ -17,8 +17,8 @@ remo_glm1_z <- glm(b_remo ~ trees100_9020*trees1_9020 + group_involve2,
                    family = "binomial")
 
 # parameter estimate dataframe
-burn_df<-tidy(burn_glm1_z, conf.int=T) %>% mutate(Model = "Prescribed burning")
-remo_df<-tidy(remo_glm1_z, conf.int=T) %>% mutate(Model = "Mechanical removal")
+burn_df<-broom::tidy(burn_glm1_z, conf.int=T) %>% mutate(Model = "Prescribed burning")
+remo_df<-broom::tidy(remo_glm1_z, conf.int=T) %>% mutate(Model = "Mechanical removal")
 
 mixed_df<- bind_rows(
     burn_df, remo_df) %>% 
@@ -30,31 +30,35 @@ mixed_df<- bind_rows(
                               "group_involve2"="Group involvement",
                               "(Intercept)" = "Intercept"))
 
-ggplot(mixed_df, aes(x=term, y=estimate, group=Model))+
-    geom_pointrange(aes(ymin=conf.low, ymax=conf.high,
-                        shape=Model, color=Model), 
-                    position=position_dodge(.5), size=3, fatten=2,
+# plot
+#https://waldyrious.net/viridis-palette-generator/
+
+ggplot(mixed_df, aes(y=term, x=estimate, group=Model))+
+    geom_pointrange(aes(xmin=conf.low,
+                        xmax=conf.high,
+                        shape=Model,
+                        color=Model), 
+                    linewidth=2,
+                    position=position_dodge(0.5),
+                    size=1.1,
                     fill="white")+
-    coord_flip()+
-    geom_hline(yintercept=0, linetype="dashed", linewidth=1)+
+    geom_vline(xintercept=0, linetype="dashed", linewidth=1)+
     scale_shape_manual(values=c(22,23),
                        breaks=c("Mechanical removal", "Prescribed burning"))+
-    scale_color_manual(values = c("orange", "red"),
+    scale_color_manual(values = c("#fc9f07", "#d44842"),
                        breaks=c("Mechanical removal", "Prescribed burning"))+
-    ylab("Beta (log odds) estimate") +
-    xlab("")+
-    theme_minimal(base_size = 20) +
-    theme(panel.grid.minor = element_blank(),
+    xlab("Log odds estimate") +
+    ylab("")+
+    theme_minimal(base_size = 15) +
+    theme(axis.text=element_text(size=15, color="black"),
+          panel.grid.minor = element_blank(),
           panel.grid.major.x = element_blank(),
           panel.grid.major.y = element_line(linetype="dotted", color="darkgray", size=.5),
-          #strip.text=element_text(size=12, face="bold.italic", color="black"),
-          #strip.text.y.right = element_text(angle = 0, hjust=0),
           panel.background = element_rect(colour = "gray", size=1, fill=NA),
           legend.position = "bottom",
           legend.title = element_blank(),
-          legend.text=element_text(size=19),
-          axis.text=element_text(size=19, color="black"))+
-    #guides(color = guide_legend(override.aes = list(linetype = 1, size=1)))
-    guides(color=guide_legend(nrow=2))
+          legend.text=element_text(size=15, hjust=0.5, margin = margin(r = 1, unit = "cm")),
+          legend.spacing.x = unit(0.2, 'cm'),
+          legend.key.size = unit(1, "cm"))
 
-#ggsave("9.Analysis/1.HollysCode/figs/Ch3_LogOddsEstimates2.png", width = 12, height=7, units="in", dpi=300, bg="white")
+#ggsave("figs/parameter_estimates.png", width = 12, height=7, units="in", dpi=300, bg="white")
