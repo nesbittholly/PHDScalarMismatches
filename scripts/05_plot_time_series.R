@@ -30,7 +30,7 @@ mean_tc<-datv%>%
 facetlabs<-c("Local-level\n(1 km radius)", "Regional-level\n(100 km radius)")
 names(facetlabs) <- c("1 km", "100 km")
 
-ggplot(datv, aes(x=Year, y=Tree_Perc_Mean*100))+
+p<-ggplot(datv, aes(x=Year, y=Tree_Perc_Mean*100))+
     geom_line(aes(group=uniqueID, color = "Individual"), alpha=0.25, )+
     geom_line(data=mean_tc, aes(x=Year, y=Tree_Perc_Mean*100, group=Buffer, color="Sample mean",), linewidth=2)+
     scale_color_manual(values = c("darkolivegreen4", "black"), name ="")+
@@ -51,5 +51,11 @@ ggplot(datv, aes(x=Year, y=Tree_Perc_Mean*100))+
 #legend.position = "bottom")#+
 #guides(color=guide_legend(nrow=2))
 
-
+cowplot::ggdraw()+
+    cowplot::draw_plot(p)+
+    cowplot::draw_plot_label(
+        c("A", "B"),
+        c(0, 0.5),
+        c(0.9, 0.9),
+        size = 18)
 #ggsave("figs/time_series.png", width = 12, height=6, units="in", dpi=300, bg="white")

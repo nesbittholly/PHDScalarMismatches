@@ -24,9 +24,9 @@ mixed_df<- bind_rows(
     burn_df, remo_df) %>% 
     #filter(!term=="(Intercept)") %>%
     mutate(term=recode_factor(term,
-                              "trees100_9020:trees1_9020" = "Local- and regional-level\nchange in mean % tree\ncover interaction",
-                              "trees100_9020" = "Regional-level (100 km)\nchange in mean % tree\ncover from 1990 to 2020",
-                              "trees1_9020" = "Local-level (1 km)\nchange in mean % tree\ncover from 1990 to 2020",
+                              "trees100_9020:trees1_9020" = "Interaction of local- and regional-level\nchange in mean % tree cover",
+                              "trees100_9020" = "Regional-level (100 km radius) change in\nmean % tree cover from 1990 to 2020",
+                              "trees1_9020" = "Local-level (1 km radius) change in\nmean % tree cover from 1990 to 2020",
                               "group_involve2"="Group involvement",
                               "(Intercept)" = "Intercept"))
 
@@ -37,9 +37,10 @@ ggplot(mixed_df, aes(y=term, x=estimate, group=Model))+
                         shape=Model,
                         color=Model), 
                     linewidth=2,
-                    position=position_dodge(0.5),
+                    position=position_dodge(width = 0.5),
                     size=1.1,
                     fill="white")+
+    #coord_fixed(ratio =0.45)+ #reduces space between y-axis ticks but relative to the vertical plot window so leaves huge margins, play with saving different sizes instead
     geom_vline(xintercept=0, linetype="dashed", linewidth=1)+
     scale_shape_manual(values=c(22,23),
                        breaks=c("Mechanical removal", "Prescribed burning"))+
@@ -47,16 +48,15 @@ ggplot(mixed_df, aes(y=term, x=estimate, group=Model))+
                        breaks=c("Mechanical removal", "Prescribed burning"))+
     xlab("Log odds estimate") +
     ylab("")+
-    theme_minimal(base_size = 15) +
+    theme_classic(base_size = 15) +
     theme(axis.text=element_text(size=15, color="black"),
           panel.grid.minor = element_blank(),
           panel.grid.major.x = element_blank(),
-          panel.grid.major.y = element_line(linetype="dotted", color="darkgray", size=.5),
-          panel.background = element_rect(colour = "gray", size=1, fill=NA),
+          panel.grid.major.y = element_line(linetype="dotted", color="darkgray", linewidth=.5),
           legend.position = "bottom",
           legend.title = element_blank(),
           legend.text=element_text(size=15, hjust=0.5, margin = margin(r = 1, unit = "cm")),
           legend.spacing.x = unit(0.2, 'cm'),
           legend.key.size = unit(1, "cm"))
 
-#ggsave("figs/parameter_estimates.png", width = 12, height=7, units="in", dpi=300, bg="white")
+#ggsave("figs/parameter_estimates.png", width = 9, height=5, units="in", dpi=300, bg="white")
