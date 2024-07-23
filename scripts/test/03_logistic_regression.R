@@ -7,8 +7,24 @@ library(broom) #for augment
 dat90_20<-read_csv("data/processed/ProducerDF_TreeCoverChangeCounty.csv")
 
 ## removing NAs
+# dat90_20_nas<-na.omit(dat90_20%>%
+#                           dplyr::select(uniqueID,trees1_9020, trees100_9020, group_involve2, b_burn, b_remo)) #leaves 396 observations
+#remove: b_chem4, b_burn4, b_remo4, change_obs, norms, trust, group_involve, freq_avg, info_avg, size, occup_Iqv, homophily, density, county, dist_pb_km, log_dist_pb_km, trees10_9020, trees50_9020
+#keep: uniqueID, nrd, eco, Shape, trees1_9020, trees100_9020, b_remo, b_burn, group_involve2, county2
+
 dat90_20_nas<-na.omit(dat90_20%>%
-                          select(uniqueID,trees1_9020, trees100_9020, group_involve2, b_burn, b_remo))#-c(b_chem4:log_dist_pb_km, trees10_9020:trees50_9020)))
+                          dplyr::select(uniqueID, trees1_9020, trees100_9020, b_remo, b_burn, group_involve2, county2)) #leaves 383 observations
+
+
+t <- brm(formula = b_remo ~ trees100_9020+trees1_9020 + I(trees1_9020^2) +trees100_9020*trees1_9020 + group_involve2 + (1|county2),
+         data= dat90_20_nas,
+         family = bernoulli)
+
+#try adding longitude, NRDs
+#look at contingency tables
+#varying slope for group participation
+#divide continuous variables by 2 sds instead of 1 so that they are comparable on the same scale (gelman paper)
+#LUIC rather than AIC
 
 ## standardizing
 dat90_20_z <-as_tibble(scale(dat90_20_nas%>%dplyr::select(trees1_9020, trees100_9020)))#%>%st_drop_geometry))
@@ -98,6 +114,7 @@ for (i in 4:15) {
 }
 
 # model diagnostics
+#good website for model diagnostics:#https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#model-diagnostics
 ## linearity
 ### burn
 behav_probabilities<-predict(burn_glm1_z, type="response") #predicts probability of each ind doing behaviour
@@ -164,9 +181,6 @@ dat90_20_z%>%filter(county2=="YORK" & b_burn==0 & trees1_9020>4.5) #uniqueID = 2
 dat90_20_z%>%filter(county2=="NEMAHA" & b_burn==0 & trees1_9020>2.5) #uniqueID = 2021_4155
 dat90_20_z%>%filter(county2=="CUSTER" & b_burn==1 & trees1_9020>2.5) #uniqueID = 2021_5511
 dat90_20_nas%>%filter(uniqueID=="2021_0594"|uniqueID=="2021_4155"|uniqueID=="2021_5511")
-
-## check this website when I go to publish to redo diagnostics:
-#https://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#model-diagnostics
 
 ### remo
 cooks<-cooks.distance(remo_glm1_z) 

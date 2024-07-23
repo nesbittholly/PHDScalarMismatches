@@ -1,11 +1,16 @@
 library(tidyverse)
+install.packages("CAST")
+install.packages("twosamples")
 
 # read in data and prep for model
 dat90_20<-read_csv("data/processed/ProducerDF_TreeCoverChangeCounty.csv")
 
 ## removing NAs
+# dat90_20_nas<-na.omit(dat90_20%>% #leaves 396 observations
+#                           select(uniqueID,trees1_9020, trees100_9020, group_involve2, b_burn, b_remo))#-c(b_chem4:log_dist_pb_km, trees10_9020:trees50_9020)))
+# 
 dat90_20_nas<-na.omit(dat90_20%>%
-                          select(uniqueID,trees1_9020, trees100_9020, group_involve2, b_burn, b_remo))#-c(b_chem4:log_dist_pb_km, trees10_9020:trees50_9020)))
+                          dplyr::select(uniqueID, trees1_9020, trees100_9020, b_remo, b_burn, group_involve2, county2)) #leaves 383 observations
 
 ## standardizing
 dat90_20_z <-as_tibble(scale(dat90_20_nas%>%dplyr::select(trees1_9020, trees100_9020)))#%>%st_drop_geometry))
@@ -22,19 +27,40 @@ remo_glm1_z <- glm(b_remo ~ trees100_9020*trees1_9020 + group_involve2,
 
 # spatial partitioning
 ## reading in spatial data
-range_pts <- sf::read_sf("data/original/RangelandSurvey.gdb", layer = "SurveySampleFrame") %>% 
+# range_pts <- sf::read_sf("data/original/RangelandSurvey.gdb", layer = "SurveySampleFrame") %>% 
+#     dplyr::select(X:Ymax, uniqueID, Shape) %>%
+#     sf::st_transform(4326)
+# 
+# set.seed(999)
+# dat_folds <-
+#     dat90_20_nas %>% 
+#     inner_join(., range_pts %>% 
+#                    sf::st_drop_geometry() %>% 
+#                    dplyr::select(uniqueID, X, Y)) %>% 
+#     dplyr::mutate(fold = factor(kmeans(cbind(.$X, .$Y), 10)$cluster,
+#                                 labels = 1:10))
+
+# Transform to UTM because CAST function wants coordinates to be planar instead of geodesic (long/lat)
+range_pts <- sf::read_sf("data/original/RangelandSurvey.gdb", layer = "SurveySampleFrame") %>%
     dplyr::select(X:Ymax, uniqueID, Shape) %>%
-    sf::st_transform(4326)
+    sf::st_transform(32614)
 
-set.seed(999)
+# You're trying to predict across Nebraska, so that's your model domain
+# This just creates a shapefile for Nebraska
+neb <- sf::read_sf("data/original/nrd_boundaries/BND_NaturalResourceDistricts_DNR.shp") %>%
+    dplyr::summarize() %>%
+    sf::st_transform(., st_crs(range_pts))
+
+# the CAST::knndm function creates spatial clusters so that the distributions of nearest neighbor geographic distances within a CV fold match those
+# across a randomly generated set of points spread throughout your model domain (Nebraska)
+# This code adds the clusters to the 'dat90_20_nas' data frame
 dat_folds <-
-    dat90_20_nas %>% 
-    inner_join(., range_pts %>% 
-                   sf::st_drop_geometry() %>% 
-                   dplyr::select(uniqueID, X, Y)) %>% 
-    dplyr::mutate(fold = factor(kmeans(cbind(.$X, .$Y), 10)$cluster,
-                                labels = 1:10))
-
+    dat90_20_nas %>%
+    dplyr::inner_join(range_pts %>%
+                          dplyr::select(uniqueID, X, Y),
+                      .) %>%
+    dplyr::mutate(fold = as.factor(CAST::knndm(., k = 10, modeldomain = neb)$clusters)) %>%
+    sf::st_drop_geometry()
 
 ## Get model formula of your model of interest
 model_formula <- formula(remo_glm1_z) #change to remo_glm1_z or burn_glm1_z to generate figure
@@ -105,8 +131,7 @@ map<-dat90_20_nas %>%
     dplyr::mutate(fold = kmeans(cbind(.$X, .$Y), 10)$cluster)%>%
     sf::st_drop_geometry()
 #map<-map %>% mutate(fold=as.factor(fold))
-#scv_remo 
-scv_remo <-map%>% inner_join(.,pred_acc)%>% #switch out scv_pb and scv_remo to generate images
+scv_pb <-map%>% inner_join(.,pred_acc)%>% #switch out scv_pb and scv_remo to generate images
     ggplot(., aes(X, Y)) +
     geom_point(aes(color = as.factor(fold), size=as.factor(correct)), alpha=0.8) +
     scale_size_manual("correct", values=c(.5,2), labels = c("Incorrect", "Correct"))+
@@ -115,11 +140,11 @@ scv_remo <-map%>% inner_join(.,pred_acc)%>% #switch out scv_pb and scv_remo to g
     theme(axis.text=element_text(size=15, color="black"),
           panel.grid.minor = element_blank(),
           panel.grid.major = element_blank(),
-          #legend.position = "bottom",
-          #legend.direction = "vertical",#)+
-          legend.position="none")+
-    labs(x="Longitude", y = "Latitude")#+
-    #guides(color="none", size=guide_legend(title="Prediction accuracy"))
+          legend.position = "bottom",
+          legend.direction = "vertical")+
+          #legend.position="none")+
+    labs(x="Longitude", y = "Latitude")+
+    guides(color="none", size=guide_legend(title="Prediction accuracy"))
 scv_remo
 scv_pb
 

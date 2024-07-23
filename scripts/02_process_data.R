@@ -96,35 +96,45 @@ dat90_20<-dat90_20%>%
                                county == "GRANT/CUSTER" ~ "GRANT",
                                county == "GAGE/SALINE" ~ "SALINE",
                                TRUE ~ as.character(county)))
+dat90_20 %>% 
+    dplyr::select(county, county2) %>%
+    print(n = Inf)
 table(dat90_20$county2)
 
-# ## creating NRD and ecoregion variables
-# range_pts <- sf::read_sf("data/original/RangelandSurvey.gdb", layer = "SurveySampleFrame") %>% 
-#     dplyr::select(X:Ymax, uniqueID, Shape) %>%
-#     sf::st_transform(4326)
-# ecos <- sf::read_sf("data/original/NE_ecoregions/ne_eco_l4.shp") %>% 
-#     sf::st_transform(4326)
-# nrds <- sf::read_sf("data/original/nrd_boundaries/BND_NaturalResourceDistricts_DNR.shp") %>% 
-#     sf::st_transform(4326)
-
-# range_pts_nrd_eco <- 
-#     range_pts %>% 
-#     sf::st_join(., nrds %>% 
-#                 dplyr::select(nrd = NRD_Name)) %>% 
-#     sf::st_join(., ecos %>% 
-#                 dplyr::select(eco = US_L4NAME))
-# 
-# nrd_eco<-range_pts_nrd_eco%>%dplyr::select(uniqueID, nrd, eco) #%>% st_drop_geometry()
-# dat90_20<-inner_join(nrd_eco, dat90_20, by="uniqueID")
-
-# ## creating NRD variable for those that have ended juniper cost-share
-# dat90_20<-dat90_20%>%
-#     mutate(no_share = case_when(nrd == "Twin Platte" ~ 0,
-#                                 nrd == "Upper Loup" ~ 0,
-#                                 TRUE ~ 1))
-
-
 #write.csv(dat90_20,"data/processed/ProducerDF_TreeCoverChangeCounty.csv", row.names=F)
+
+## creating NRD and ecoregion variables
+range_pts <- sf::read_sf("data/original/RangelandSurvey.gdb", layer = "SurveySampleFrame") %>%
+    dplyr::select(X:Ymax, uniqueID, Shape) %>%
+    sf::st_transform(4326)
+ecos <- sf::read_sf("data/original/NE_ecoregions/ne_eco_l4.shp") %>%
+    sf::st_transform(4326)
+nrds <- sf::read_sf("data/original/nrd_boundaries/BND_NaturalResourceDistricts_DNR.shp") %>%
+    sf::st_transform(4326)
+
+range_pts_nrd_eco <-
+    range_pts %>%
+    sf::st_join(., nrds %>%
+                dplyr::select(nrd = NRD_Name)) %>%
+    sf::st_join(., ecos %>%
+                dplyr::select(eco = US_L4NAME))
+
+nrd_eco<-range_pts_nrd_eco%>%dplyr::select(uniqueID, nrd, eco) #%>% st_drop_geometry()
+dat90_20_nrd<-inner_join(nrd_eco, dat90_20, by="uniqueID")
+
+## creating NRD variable for those that have ended juniper cost-share
+dat90_20_nrd<-dat90_20_nrd %>%
+    mutate(no_share = case_when(nrd == "Twin Platte" ~ 0,
+                                nrd == "Upper Loup" ~ 0,
+                                TRUE ~ 1)) %>% 
+    sf::st_drop_geometry()
+
+dat90_20_nrd %>% 
+    dplyr::select(nrd, no_share) %>%
+    print(n = Inf)
+
+#write.csv(dat90_20_nrd,"data/processed/ProducerDF_TreeCoverChangeCounty_NRD.csv", row.names=F)
+
 
 ## removing NAs
 dat90_20_nas<-na.omit(dat90_20%>%
