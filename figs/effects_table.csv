@@ -1,0 +1,17 @@
+term,estimate,conf.low,conf.high,Model
+Intercept,-2.4986476192858493,-3.0957132718983287,-1.9592885399346098,Prescribed burning
+"Regional-level (100 km radius) change in
+mean % tree cover from 1990 to 2020",37.882568022489345,25.959669499499135,50.541050483241364,Prescribed burning
+"Local-level (1 km radius) change in
+mean % tree cover from 1990 to 2020",12.406951800494951,-3.359209619499558,29.43033644436209,Prescribed burning
+Group involvement,1.635503257405018,0.7662797599768458,2.4702213700964197,Prescribed burning
+"Interaction of local- and regional-level
+change in mean % tree cover",-367.52811175183365,-705.2151893816537,-86.08196098879934,Prescribed burning
+Intercept,0.11144737027984636,-0.2923836812138613,0.517123638056717,Mechanical removal
+"Regional-level (100 km radius) change in
+mean % tree cover from 1990 to 2020",39.95272068139478,25.68982851927309,54.95756222177089,Mechanical removal
+"Local-level (1 km radius) change in
+mean % tree cover from 1990 to 2020",10.624588387303644,-3.299401701986345,25.664534563161958,Mechanical removal
+Group involvement,0.013239611350676835,-0.8646556677391402,0.956423328238583,Mechanical removal
+"Interaction of local- and regional-level
+change in mean % tree cover",-282.2472523595689,-523.6358741395294,-53.39285955765611,Mechanical removal
