@@ -3,30 +3,45 @@ library(tidyverse)
 # read in data and prep for model
 dat90_20_nas<-read_csv("data/processed/ProducerDF_TreeCoverChangeCounty_NAsRemoved.csv")
 
+## standardizing for plots
+# dat90_20_z <-as_tibble(scale(dat90_20_nas%>%dplyr::select(trees1_9020, trees100_9020)))#%>%st_drop_geometry))
+# dat90_20_z <-dat90_20_nas%>%dplyr::select(-c(trees1_9020, trees100_9020))%>%bind_cols(dat90_20_z)
+
+#divide continuous variables by 2 sds instead of 1 so that they are comparable on the same scale (gelman paper)
+dat90_20_z<-dat90_20_nas %>% 
+    mutate(trees1_9020 = arm::rescale(trees1_9020),
+           trees100_9020 = arm::rescale(trees100_9020))
+
+#checking
+sd(dat90_20_z$trees1_9020)
+sd(dat90_20_z$trees100_9020)
+mean(dat90_20_z$trees1_9020)
+mean(dat90_20_z$trees100_9020)
+
 # models
-burn1 <- brm(b_burn ~
-                 1 +
-                 trees100_9020 + 
-                 trees1_9020 +
-                 I(trees1_9020^2) +
-                 trees100_9020*trees1_9020 +
-                 group_involve2 +
-                 (1|county2),
-             data = dat90_20_nas, 
+burn1 <- brm(b_burn ~ 1 
+             + trees100_9020
+             + trees1_9020
+             #+ I(trees1_9020^2)
+             + trees100_9020*trees1_9020
+             + group_involve2
+             #+ (1|nrd)
+             ,
+             data = dat90_20_z, 
              warmup = 1000, iter = 3000, 
              cores = 2, chains = 2, 
              seed = 123,
              family = bernoulli)
 
-remo1 <- brm(b_remo ~
-                 1 +
-                 trees100_9020 + 
-                 trees1_9020 +
-                 I(trees1_9020^2) +
-                 trees100_9020*trees1_9020 +
-                 group_involve2 +
-                 (1|county2),
-             data = dat90_20_nas, 
+remo1 <- brm(b_remo ~ 1 
+             + trees100_9020
+             + trees1_9020
+             #+ I(trees1_9020^2)
+             + trees100_9020*trees1_9020
+             + group_involve2
+             #+ (1|nrd)
+             ,
+             data = dat90_20_z, 
              warmup = 1000, iter = 3000, 
              cores = 2, chains = 2, 
              seed = 123,
@@ -45,17 +60,17 @@ remo_df<-
     mutate(Model = "Mechanical removal")
 colnames(remo_df) <- c("term", "estimate", "conf.low", "conf.high", "Model")
 
-
 mixed_df<- bind_rows(
     burn_df, remo_df) %>% 
     #filter(!term=="(Intercept)") %>%
     mutate(term=recode_factor(term,
                               "trees100_9020:trees1_9020" = "Interaction of local- and regional-level\nchange in mean % tree cover",
                               "trees100_9020" = "Regional-level (100 km radius) change in\nmean % tree cover from 1990 to 2020",
+                              "Itrees1_9020E2" = "Local-level (1 km radius) change in\nmean % tree cover from 1990 to 2020\nsquared",
                               "trees1_9020" = "Local-level (1 km radius) change in\nmean % tree cover from 1990 to 2020",
                               "group_involve2"="Group involvement",
-                              "(Intercept)" = "Intercept",
-                              "Itrees1_9020E2" = "Local-level (1 km radius) squared"))
+                              "(Intercept)" = "Intercept"
+                              ))
 
 # plot
 ggplot(mixed_df, aes(y=term, x=estimate, group=Model))+
@@ -86,4 +101,63 @@ ggplot(mixed_df, aes(y=term, x=estimate, group=Model))+
           legend.spacing.x = unit(0.2, 'cm'),
           legend.key.size = unit(1, "cm"))
 
-#ggsave("figs/parameter_estimates.png", width = 9, height=5, units="in", dpi=300, bg="white")
+#ggsave("figs/parameter_estimates_bayesian.png", width = 9, height=5, units="in", dpi=300, bg="white")
+
+
+
+# unstandardized data for table
+# models
+burn1 <- brm(b_burn ~ 1 
+             + trees100_9020
+             + trees1_9020
+             #+ I(trees1_9020^2)
+             + trees100_9020*trees1_9020
+             + group_involve2
+             #+ (1|nrd)
+             ,
+             data = dat90_20_nas, 
+             warmup = 1000, iter = 3000, 
+             cores = 2, chains = 2, 
+             seed = 123,
+             family = bernoulli)
+
+remo1 <- brm(b_remo ~ 1 
+             + trees100_9020
+             + trees1_9020
+             #+ I(trees1_9020^2)
+             + trees100_9020*trees1_9020
+             + group_involve2
+             #+ (1|nrd)
+             ,
+             data = dat90_20_nas, 
+             warmup = 1000, iter = 3000, 
+             cores = 2, chains = 2, 
+             seed = 123,
+             family = bernoulli)
+
+# parameter estimate dataframe
+burn_df<-
+    summary(burn1)$fixed[,c(1,3:4)] %>%
+    tibble::rownames_to_column("Parameter") %>%
+    mutate(Model = "Prescribed burning")
+colnames(burn_df) <- c("term", "estimate", "conf.low", "conf.high", "Model")
+
+remo_df<-
+    summary(remo1)$fixed[,c(1,3:4)] %>%
+    tibble::rownames_to_column("Parameter") %>%
+    mutate(Model = "Mechanical removal")
+colnames(remo_df) <- c("term", "estimate", "conf.low", "conf.high", "Model")
+
+mixed_df<- bind_rows(
+    burn_df, remo_df) %>% 
+    #filter(!term=="(Intercept)") %>%
+    mutate(term=recode_factor(term,
+                              "trees100_9020:trees1_9020" = "Interaction of local- and regional-level\nchange in mean % tree cover",
+                              "trees100_9020" = "Regional-level (100 km radius) change in\nmean % tree cover from 1990 to 2020",
+                              "Itrees1_9020E2" = "Local-level (1 km radius) change in\nmean % tree cover from 1990 to 2020\nsquared",
+                              "trees1_9020" = "Local-level (1 km radius) change in\nmean % tree cover from 1990 to 2020",
+                              "group_involve2"="Group involvement",
+                              "(Intercept)" = "Intercept"
+    ))
+
+#write_csv(mixed_df, "figs/effects_table.csv")

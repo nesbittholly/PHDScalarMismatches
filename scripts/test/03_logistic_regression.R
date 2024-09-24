@@ -24,7 +24,7 @@ t <- brm(formula = b_remo ~ trees100_9020+trees1_9020 + I(trees1_9020^2) +trees1
 #look at contingency tables
 #varying slope for group participation
 #divide continuous variables by 2 sds instead of 1 so that they are comparable on the same scale (gelman paper)
-#LUIC rather than AIC
+#LOOIC rather than AIC
 
 ## standardizing
 dat90_20_z <-as_tibble(scale(dat90_20_nas%>%dplyr::select(trees1_9020, trees100_9020)))#%>%st_drop_geometry))

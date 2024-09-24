@@ -2,11 +2,12 @@ library(tidyverse)
 
 # data prep
 ## reading in survey data
-dat<-read_csv("data/original/HollysDF.csv")
-dat_county<-read_csv("data/original/NebraskaProducerSurvey_AllPrompts_General_clean.csv")%>%
-    select(uniqueID, q4)%>%
+dat <- read_csv("data/original/HollysDF.csv")
+dat_county <- read_csv("data/original/NebraskaProducerSurvey_AllPrompts_General_clean.csv") %>%
+    dplyr::select(uniqueID, q4) %>%
     rename("county" = "q4")
-dat<-dat%>%left_join(dat_county, by = "uniqueID")
+dat <- dat %>% 
+    left_join(dat_county, by = "uniqueID")
 
 # ## reading in prescribed burn distances
 # pb_km<-read_csv("data/original/PresBurnAssoc_distance.csv")%>%
@@ -47,8 +48,8 @@ datgv<-left_join(dat, datv_wide, by="uniqueID")
 
 ## creating 1990 to 2020 change dataframe
 dat1990_2020<-datgv%>%
-    filter(year%in%c(1990,2020))%>%
-    select(uniqueID, q7a, q7b, q7d, sc_change_obs_veg, efficacy, risks, edu, sc_norms, sc_trust, org_group_member, freq_avg, info_avg, size, occup_Iqv, homophily,density,
+    dplyr::filter(year%in%c(1990,2020))%>%
+    dplyr::select(uniqueID, q7a, q7b, q7d, sc_change_obs_veg, efficacy, risks, edu, sc_norms, sc_trust, org_group_member, freq_avg, info_avg, size, occup_Iqv, homophily,density,
            county, #dist_pb_km,log_dist_pb_km,
            year, trees1km:trees100km)%>%
     rename("b_chem4" = "q7a",
@@ -69,16 +70,24 @@ dat90_20<-dat1990_2020_wide%>%
            trees10_9020 = trees10km_2020-trees10km_1990,
            trees50_9020 = trees50km_2020-trees50km_1990,
            trees100_9020 = trees100km_2020-trees100km_1990)%>%
-    select(-c(#uniqueID, 
+    dplyr::select(-c(#uniqueID, 
         trees1km_1990:trees100km_2020, efficacy, risks, edu))
 
 ## making binary response variable
-dat90_20<-dat90_20%>%
+dat90_20<-dat90_20 %>%
     mutate(b_remo = case_when(b_remo4 <= 2 ~ 0,
                               b_remo4 >= 3 ~ 1),
            b_burn = case_when(b_burn4 <= 2 ~ 0,
                               b_burn4 >= 3 ~ 1))
 print(dat90_20%>%dplyr::select(b_remo4, b_remo, b_burn4, b_burn))
+
+dat90_20 <- dat90_20 %>%
+    mutate(b_burn01 = case_when(b_burn4 == 1 ~ 0,
+                                b_burn4 > 1 ~ 1),
+           b_remo01 = case_when(b_remo4 == 1 ~ 0,
+                                b_remo4 > 1 ~ 1))
+
+print(dat90_20%>%dplyr::select(b_burn4, b_burn01, b_remo4, b_remo01), n = 20)
 
 ## making binary group involvement variable
 dat90_20<-dat90_20%>%
@@ -119,7 +128,7 @@ range_pts_nrd_eco <-
     sf::st_join(., ecos %>%
                 dplyr::select(eco = US_L4NAME))
 
-nrd_eco<-range_pts_nrd_eco%>%dplyr::select(uniqueID, nrd, eco) #%>% st_drop_geometry()
+nrd_eco<-range_pts_nrd_eco%>%dplyr::select(uniqueID, nrd, eco, X, Y) #%>% st_drop_geometry()
 dat90_20_nrd<-inner_join(nrd_eco, dat90_20, by="uniqueID")
 
 ## creating NRD variable for those that have ended juniper cost-share
@@ -133,11 +142,11 @@ dat90_20_nrd %>%
     dplyr::select(nrd, no_share) %>%
     print(n = Inf)
 
-#write.csv(dat90_20_nrd,"data/processed/ProducerDF_TreeCoverChangeCounty_NRD.csv", row.names=F)
+write.csv(dat90_20_nrd,"data/processed/ProducerDF_TreeCoverChangeCounty_NRD.csv", row.names=F)
 
 
 ## removing NAs
-dat90_20_nas<-na.omit(dat90_20%>%
-                          select(uniqueID,trees1_9020, trees100_9020, group_involve2, b_burn, b_remo))
+# dat90_20_nas<-na.omit(dat90_20%>%
+#                           select(uniqueID,trees1_9020, trees100_9020, group_involve2, b_burn, b_remo))
 
 #write.csv(dat90_20_nas,"data/processed/ProducerDF_TreeCoverChangeCounty_NAsRemoved.csv", row.names=F)

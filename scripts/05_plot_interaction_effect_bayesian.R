@@ -10,10 +10,10 @@ burn1 <- brm(b_burn ~
                  1 +
                  trees100_9020 + 
                  trees1_9020 +
-                 I(trees1_9020^2) +
+                 #I(trees1_9020^2) +
                  trees100_9020*trees1_9020 +
-                 group_involve2 +
-                 (1|county2),
+                 group_involve2, #+
+                 #(1|nrd),
              data = dat90_20_nas, 
              warmup = 1000, iter = 3000, 
              cores = 2, chains = 2, 
@@ -24,10 +24,10 @@ remo1 <- brm(b_remo ~
                  1 +
                  trees100_9020 + 
                  trees1_9020 +
-                 I(trees1_9020^2) +
+                 #I(trees1_9020^2) +
                  trees100_9020*trees1_9020 +
-                 group_involve2 +
-                 (1|county2),
+                 group_involve2, #+
+                 #(1|nrd),
              data = dat90_20_nas, 
              warmup = 1000, iter = 3000, 
              cores = 2, chains = 2, 
@@ -72,8 +72,10 @@ p1<-post_ci %>%
     geom_line(aes(linetype = group),
               linewidth = 1) + 
     theme_classic(base_size = 18) +
-    scale_color_manual(values = c("#fde725","#3b528b")) + #https://waldyrious.net/viridis-palette-generator/
-    scale_fill_manual(values = c("#fde725","#3b528b")) +
+    scale_color_manual(values = c("#6CD3ADFF","#0B0405FF")) + #scales::viridis_pal(option = "G")(12)
+    scale_fill_manual(values = c("#6CD3ADFF","#0B0405FF")) +
+    # scale_color_manual(values = c("#fde725","#3b528b")) + #https://waldyrious.net/viridis-palette-generator/
+    # scale_fill_manual(values = c("#fde725","#3b528b")) +
     labs(color = "",
          fill = "",
          linetype="",
@@ -116,8 +118,10 @@ p2<-post_ci %>%
     geom_line(aes(linetype = group),
               linewidth = 1) + 
     theme_classic(base_size = 18) +
-    scale_color_manual(values = c("#fde725","#3b528b")) + #https://waldyrious.net/viridis-palette-generator/
-    scale_fill_manual(values = c("#fde725","#3b528b")) +
+    scale_color_manual(values = c("#6CD3ADFF","#0B0405FF")) + #scales::viridis_pal(option = "G")(12)
+    scale_fill_manual(values = c("#6CD3ADFF","#0B0405FF")) +
+    # scale_color_manual(values = c("#fde725","#3b528b")) + #https://waldyrious.net/viridis-palette-generator/
+    # scale_fill_manual(values = c("#fde725","#3b528b")) +
     labs(color = "",
          fill = "",
          linetype="",
@@ -141,8 +145,10 @@ p_legend<-post_ci %>%
     geom_line(aes(linetype = group),
               linewidth = 1) + 
     theme_classic(base_size = 18) +
-    scale_color_manual(values = c("#fde725","#3b528b")) + #https://waldyrious.net/viridis-palette-generator/
-    scale_fill_manual(values = c("#fde725","#3b528b")) +
+    scale_color_manual(values = c("#6CD3ADFF","#0B0405FF")) + #scales::viridis_pal(option = "G")(12)
+    scale_fill_manual(values = c("#6CD3ADFF","#0B0405FF")) +
+    # scale_color_manual(values = c("#fde725","#3b528b")) + #https://waldyrious.net/viridis-palette-generator/
+    # scale_fill_manual(values = c("#fde725","#3b528b")) +
     labs(color = "",
          fill = "",
          linetype="",

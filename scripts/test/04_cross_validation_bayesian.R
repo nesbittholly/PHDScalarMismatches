@@ -1,6 +1,7 @@
 library(caret)
 library(glmmTMB)
 library(tidyverse)
+library(brms)
 
 # read in data and prep for model
 dat90_20 <- 
@@ -49,7 +50,7 @@ dat_folds <-
                          labels = 1:10)) 
 
 # Get model formula of your model of interest
-model_formula <- formula(remo3) #burn3 or remo3
+model_formula <- formula(burn_uninf) #burn3 or remo3
 
 # Make a list, where each element is a separate test fold
 test_list <- list()
@@ -89,7 +90,7 @@ test_predict_df <-
 # Classify whether or not the predictions are correct
 # Then get the proportion that are correct (same as a mean, since they're all binary) for each fold
 test_predict_df %>% 
-    mutate(pred_01 = if_else(predict[,1] > 0.5, 1, 0),
+    mutate(pred_01 = if_else(predict[,1] > 0.5, 1, 0), # play with threshold
            correct = if_else(b_burn == pred_01, 1, 0)) %>% 
     group_by(fold_group) %>% 
     summarize(prop_correct = mean(correct)) %>% 
@@ -97,3 +98,63 @@ test_predict_df %>%
               sd = sd(prop_correct),
               min = min(prop_correct),
               max = max(prop_correct)) #75.2 correct for burn3, #41.5 for remo3 HA
+
+# is the model better at predicting 0s or 1s? --> 0s, by a lot, though the complicated models do slightly better
+test_predict_df %>% 
+    mutate(pred_01 = if_else(predict[,1] > 0.3, 1, 0),
+           correct = if_else(b_burn == pred_01, 1, 0)) %>% 
+    group_by(fold_group) %>%
+    ggplot(aes(x = predict[,1], y = correct)) +
+    geom_point(alpha = 0.7, aes(col = as.factor(b_burn))) +
+    annotate("text",label = "true negative\ncorrect, no burn", x = 0.2, y = 0.8) +
+    annotate("text", label = "true positive\ncorrect, burn", x = 0.7, y = 0.8) +
+    annotate("text", label = "false negative\nincorrect\npredicted no burn, but burned", x = 0.2, y = 0.2) +
+    annotate("text", label = "false positive\nincorrect\npredicted burn, but didn't", x = 0.7, y = 0.2) #+
+    #annotate("text", label = "gets 95% of nonburners correct", x = 0.2, y = 0.7) +
+    #annotate("text", label = "but only 10% of burners correct", x = 0.7, y = 0.7) +
+    #annotate("text", label = "of the incorrect predictions, 86% are burners", x = 0.5, y = 0.1)
+    
+test_predict_df %>% 
+    mutate(pred_01 = if_else(predict[,1] > 0.5, 1, 0),
+           correct = if_else(b_burn == pred_01, 1, 0)) %>% 
+    group_by(b_burn, correct) %>%
+    summarize(n = n()) %>%
+    mutate(prop_overall = n/383) %>%
+    group_by(b_burn) %>%
+    mutate(total_behavior = sum(n)) %>%
+    mutate(prop_behavior = n/total_behavior) %>%
+    group_by(correct) %>%
+    mutate(total_rightwrong = sum(n)) %>%
+    mutate(prop_rightwrong = n/total_rightwrong)
+
+test_predict_df %>% 
+    mutate(pred_01 = if_else(predict[,1] > 0.3, 1, 0)) %>% 
+    group_by(b_burn, pred_01) %>%
+    summarize(n = n()) %>%
+    mutate(false_true = case_when(b_burn == 0 & pred_01 == 0 ~ "true_neg",
+                                  b_burn == 1 & pred_01 == 1 ~ "true_pos",
+                                  b_burn == 0 & pred_01 == 1 ~ "false_pos",
+                                  b_burn == 1 & pred_01 == 0 ~ "false_neg"))
+    
+
+# ROC curve #https://www.digitalocean.com/community/tutorials/plot-roc-curve-r-programming
+library(verification)
+roc.plot(test_predict_df$b_burn, test_predict_df$predict[,1])
+
+library(pROC)
+plot(roc(test_predict_df$b_burn, test_predict_df$predict[,1]), print.auc = T)
+# true positive rate is the proportion of observations that were correctly predicted to be positive out of all positive observations (true positive / (true positive + false positive))
+# false positive rate is the proportion of observations that are incorrectly predicted to be positive out of all negative observations (FP / (TN + FP))
+
+# y axis is the true positive rate (sensitivity)
+# x axis is the false positive rate (1 - specificity)
+
+# "Classifiers that give curves closer to the top-left corner indicate a better performance. 
+# As a baseline, a random classifier is expected to give points lying along the diagonal (FPR = TPR).
+# The closer the curve comes to the 45-degree diagonal of the ROC space, the less accurate the test."
+
+#https://developers.google.com/machine-learning/crash-course/classification/roc-and-auc 
+
+# root mean square error
+library(Metrics)
+Metrics::rmse(test_predict_df$b_burn, test_predict_df$predict[,1]) # compare different models

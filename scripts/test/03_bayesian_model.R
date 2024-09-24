@@ -29,6 +29,7 @@ dat90_20_nas %>%
 # dat90_20_z <-as_tibble(scale(dat90_20_nas%>%dplyr::select(trees1_9020, trees100_9020)))#%>%st_drop_geometry))
 # dat90_20_z <-dat90_20_nas%>%dplyr::select(-c(trees1_9020, trees100_9020))%>%bind_cols(dat90_20_z)
 
+#https://www.rensvandeschoot.com/tutorials/brms-started/
 # intercept only models
 ## burn
 burn0 <- brm(b_burn ~ 1 + (1|nrd),  
