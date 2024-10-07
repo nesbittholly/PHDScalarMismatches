@@ -26,7 +26,15 @@ ggplot() +
 
 
 # sample points
-dat90_20_nas<-read_csv("data/processed/ProducerDF_TreeCoverChangeCounty_NAsRemoved.csv")
+dat90_20 <- 
+    read_csv("data/processed/ProducerDF_TreeCoverChangeCounty_nrd.csv") 
+
+dat90_20_nas <- 
+    na.omit(dat90_20 %>%
+                dplyr::select(uniqueID, trees1_9020, trees100_9020, b_burn01, b_remo01, group_involve2#, nrd
+                              #county2, eco, no_share, X, Y
+                )) #leaves 396 observations
+
 range_pts <- sf::read_sf("data/original/RangelandSurvey.gdb", layer = "SurveySampleFrame") %>%
     dplyr::select(X:Ymax, uniqueID, Shape) %>%
     sf::st_transform(4326) %>%
@@ -56,9 +64,9 @@ ggplot() +
     geom_sf(data = range_pts, alpha = 0.8,
             aes(shape = as.factor(group_involve2),
                 fill = trees100_9020*100,
-                size = as.factor(b_burn))) +
+                size = as.factor(b_burn01))) +
     coord_sf(crs = st_crs("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"), datum = NA) +
-    scale_size_manual(values = c(1, 2.5), labels = c("Never/rarely", "Occasionally/frequently")) +
+    scale_size_manual(values = c(1, 2.5), labels = c("No", "Yes")) +
     scale_shape_manual(values = c(21,23), labels = c("Not involved", "Involved")) +
     viridis::scale_fill_viridis(option="mako", #mako or magma?
                                 breaks = c(0, 2.5, 5.0, 7.5, 10), 

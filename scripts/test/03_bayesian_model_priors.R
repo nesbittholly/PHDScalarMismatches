@@ -35,6 +35,7 @@ hist(rt(n = 1000, df = 7)) #can't change mean and sd with rt though
 hist(ggdist::rstudent_t(n = 1000, df = 7, mu = 0, sigma = 1.5)) #use student_t(7, 0, 1.5) for prior
 hist(rexp(n = 1000,rate = 1)) #use exponential(1) for prior
 hist(rcauchy(n = 1000, location = 0, scale = 2)) #use cauchy(0,2) for prior
+hist(runif(n = 1000, min = -4, max = 4)) #use uniform(-4,4) for prior
 
 # set new priors
 

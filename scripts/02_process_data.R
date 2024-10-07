@@ -73,6 +73,8 @@ dat90_20<-dat1990_2020_wide%>%
     dplyr::select(-c(#uniqueID, 
         trees1km_1990:trees100km_2020, efficacy, risks, edu))
 
+dat90_20 %>% dplyr::select(trees1_9020, trees100_9020) %>% summary()
+
 ## making binary response variable
 dat90_20<-dat90_20 %>%
     mutate(b_remo = case_when(b_remo4 <= 2 ~ 0,

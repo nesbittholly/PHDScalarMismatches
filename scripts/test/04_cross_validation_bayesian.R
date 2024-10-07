@@ -50,7 +50,7 @@ dat_folds <-
                          labels = 1:10)) 
 
 # Get model formula of your model of interest
-model_formula <- formula(burn_uninf) #burn3 or remo3
+model_formula <- formula(burn3) #burn3 or remo3
 
 # Make a list, where each element is a separate test fold
 test_list <- list()
@@ -72,7 +72,7 @@ folds <- tibble(fold_group = levels(dat_folds$fold),
 
 # Then you can apply your model to each of the 10 training folds
 folds_models <- folds %>%
-    mutate(model = map(train_data, ~brm(model_formula, data=.))) 
+    mutate(model = purrr::map(train_data, ~brm(model_formula, data=.))) 
 
 # And then make predictions from each of those 10 models using the corresponding test data as new data
 test_predict <-
