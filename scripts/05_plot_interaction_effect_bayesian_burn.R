@@ -64,15 +64,24 @@ post_ci %>%
           legend.text=element_text(size=10))+
     guides(color=guide_legend(nrow=2, byrow=T),
            linetype=guide_legend(nrow=2, byrow=T)) +
-    annotation_raster(raster1, -9,-6,0.07,0.17) + #bottom-left grass
-    annotation_raster(raster2, 25,27, 0.08, 0.15) + #bottom-right trees
-        annotation_raster(raster2, 26,28, 0.08, 0.15) +
-        annotation_raster(raster2, 27,29, 0.08, 0.15) +
-    annotation_raster(raster1, -7,-4, 0.86, 0.96) + #top-right tree/grass/tree
-        annotation_raster(raster2, -8,-6, 0.88, 0.95) +
-        annotation_raster(raster2, -5,-3, 0.88, 0.95) +
-    annotation_raster(raster1,  24,27, 0.86, 0.96) + #top-left grass/tree/grass
-    annotation_raster(raster2, 24.5,26.5, 0.88, 0.95)
+    annotation_raster(raster1, -11,-8,0.07,0.17) + #bottom-left grass
+    annotation_raster(raster2, 21,23, 0.08, 0.15) + #bottom-right trees
+    annotation_raster(raster2, 22,24, 0.08, 0.15) +
+    annotation_raster(raster2, 23,25, 0.08, 0.15) +
+    annotation_raster(raster1, -10,-7, 0.86, 0.96) + #top-left tree/grass/tree
+    annotation_raster(raster2, -11,-9, 0.88, 0.95) +
+    annotation_raster(raster2, -8,-6, 0.88, 0.95) +
+    annotation_raster(raster1,  22,25, 0.86, 0.96) + #top-right grass/tree/grass
+    annotation_raster(raster2, 22.5,24.5, 0.88, 0.95)
+    # annotation_raster(raster1, -9,-6,0.07,0.17) + #bottom-left grass
+    # annotation_raster(raster2, 25,27, 0.08, 0.15) + #bottom-right trees
+    #     annotation_raster(raster2, 26,28, 0.08, 0.15) +
+    #     annotation_raster(raster2, 27,29, 0.08, 0.15) +
+    # annotation_raster(raster1, -7,-4, 0.86, 0.96) + #top-left tree/grass/tree
+    #     annotation_raster(raster2, -8,-6, 0.88, 0.95) +
+    #     annotation_raster(raster2, -5,-3, 0.88, 0.95) +
+    # annotation_raster(raster1,  24,27, 0.86, 0.96) + #top-right grass/tree/grass
+    # annotation_raster(raster2, 24.5,26.5, 0.88, 0.95)
 
 #ggsave("figs/interaction_effect_bayesian_burn.png", width = 7, height=7, units="in", dpi=300, bg="white")    
     
