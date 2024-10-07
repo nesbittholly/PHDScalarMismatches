@@ -17,8 +17,8 @@ Note: Much of this is probably unnecessary for the published supplemental materi
 * see if there's anything critical that I've omitted,  
 * get feedback on what should be included in a supplemental file, and  
 * identify if there are issues with my modelling approach that should be tweaked.
-    + Some issues with heteroskedasticity still - see Diagnostics/Residual plots
-    + Large differences in informative vs non-informative priors - see Model checks/Is there a notable effect of the prior when compared with non-informative priors?  
+    + Some issues with heteroskedasticity still - see Diagnostics/Residual plots (setting priors for NRD SD's didn't appear to make a difference)
+    + Still some large differences in informative vs non-informative priors - see Model checks/Is there a notable effect of the prior when compared with non-informative priors? (I set flat priors, but those seem to be more informative to me since they allow for equal probability of larger numbers in a logistic. I also tried narrower normal distributions but then those tend to pull the estimates toward 0... everything seems mildly informative to me)  
     
 I'll wind up hiding most of the code here but I'm including it for now so you can see what I did...
 
@@ -26,7 +26,7 @@ I'll wind up hiding most of the code here but I'm including it for now so you ca
 Individuals unaffiliated with the research group piloted the questionnaire.  
 We purchased producer address information from Farm Market iD, an agricultural data marketing company, requesting addresses within our study counties for all National Agricultural Survey respondents with >20 acres of pasture/rangeland (N = 6546 with mailing addresses, 3448 for whom we had emails). After taking a simple random sample of 4500 from this population and removing duplicates, our sample size was 4494 individuals, 2409 for whom we had emails. Using a modified tailored design (Dillman, Smyth, and Christian 2014), we sent three survey invitation emails followed by three paper mailings; all mailings were spaced 2-3 weeks apart. 
 
-```{r}
+```{r, , include = FALSE}
 library(brms)
 library(rstan)
 library(tidyverse)
@@ -34,18 +34,18 @@ library(splines)
 library(MASS)
 ```
 
+# Data prep
 ```{r}
-# read in data and prep for model
+# read in data
 dat90_20 <- 
     read_csv("data/processed/ProducerDF_TreeCoverChangeCounty_nrd.csv") 
 
-## removing NAs
+# remove NAs
 dat90_20_nas <- 
     na.omit(dat90_20 %>%
                 dplyr::select(uniqueID, trees1_9020, trees100_9020, b_burn01, b_remo01, group_involve2, nrd)) #leaves 396 observations
 
-## rescale
-#divide continuous variables by 2 sds instead of 1 so that they are comparable on the same scale (gelman paper)
+# rescale - divide continuous variables by 2 sds instead of 1 so that they are comparable on the same scale (see Gelman)
 dat90_20_z<-dat90_20_nas %>% 
     mutate(trees1_9020 = arm::rescale(trees1_9020),
            trees100_9020 = arm::rescale(trees100_9020))
