@@ -31,17 +31,26 @@ ggplot() +
                 alpha = 0.2) +
     scale_fill_manual(name = "", values = c("red", "black")) +
     ggnewscale::new_scale_color() +
-    geom_jitter(aes(x = trees100_9020, y = b_burn01, color = as_factor(group_involve2)),
-                data = dat90_20_z,
-                height = 0.04,
-                width = 0.1,
-                alpha = 0.5) +
+    # geom_jitter(aes(x = trees100_9020, y = b_burn01, color = as_factor(group_involve2)),
+    #             data = dat90_20_z,
+    #             height = 0.04,
+    #             width = 0.1,
+    #             alpha = 0.5) +
+    ggdist::geom_dots(aes(side = ifelse(b_burn01 == 1, "top", "bottom"),
+                          x = trees100_9020, y = b_burn01,
+                          color = as_factor(group_involve2)),
+                      data = dat90_20_z,
+                      scale = 0.3,
+                      layout = "hex",
+                      pch = 19) +
+    ggdist::scale_side_mirrored(guide = "none") +
     scale_color_manual(name = "", values = c("black", "red"), guide = "none") +
+    coord_cartesian(ylim = c(0, 1)) +
     theme_classic(base_size = 18) +
     labs(linetype="",
          fill = "",
          color = "",
-         x = "Regional-level mean % tree cover",
+         x = "Regional-level change in mean % tree cover\n(standardized)",
          y = "Probability of prescribed burning") +
     theme(legend.position = "bottom",
         axis.text=element_text(color="black"),
@@ -79,17 +88,26 @@ ggplot() +
                 alpha = 0.2) +
     scale_fill_manual(name = "", values = c("red", "black")) +
     ggnewscale::new_scale_color() +
-    geom_jitter(aes(x = trees1_9020, y = b_burn01, color = as_factor(group_involve2)),
-                data = dat90_20_z,
-                height = 0.04,
-                width = 0.1,
-                alpha = 0.5) +
+    # geom_jitter(aes(x = trees1_9020, y = b_burn01, color = as_factor(group_involve2)),
+    #             data = dat90_20_z,
+    #             height = 0.04,
+    #             width = 0.1,
+    #             alpha = 0.5) +
+    ggdist::geom_dots(aes(side = ifelse(b_burn01 == 1, "top", "bottom"),
+                          x = trees1_9020, y = b_burn01,
+                          color = as_factor(group_involve2)),
+                      data = dat90_20_z,
+                      scale = 0.4,
+                      layout = "hex",
+                      pch = 19) +
+    ggdist::scale_side_mirrored(guide = "none") +
     scale_color_manual(name = "", values = c("black", "red"), guide = "none") +
+    coord_cartesian(ylim = c(0, 1)) +
     theme_classic(base_size = 18) +
     labs(linetype="",
          fill = "",
          color = "",
-         x = "Local-level mean % tree cover",
+         x = "Local-level change in mean % tree cover\n(standardized)",
          y = "Probability of prescribed burning") +
     theme(legend.position = "bottom",
           axis.text=element_text(color="black"),
