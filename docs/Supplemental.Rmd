@@ -1,7 +1,7 @@
 ---
 title: "Supplemental"
 author: "Holly K. Nesbitt"
-date: "September 27, 2024"
+date: "October 8, 2024"
 output: 
     html_document:
         toc: true
@@ -11,16 +11,6 @@ output:
 ```{r setup, include=FALSE} 
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 ```
-
-Note: Much of this is probably unnecessary for the published supplemental material. Because I'm so new to Bayesian analysis, I'm including it here for co-authors to:  
-  
-* see if there's anything critical that I've omitted,  
-* get feedback on what should be included in a supplemental file, and  
-* identify if there are issues with my modelling approach that should be tweaked.
-    + Some issues with heteroskedasticity still - see Diagnostics/Residual plots (setting priors for NRD SD's didn't appear to make a difference)
-    + Still some large differences in informative vs non-informative priors - see Model checks/Is there a notable effect of the prior when compared with non-informative priors? (I set flat priors, but those seem to be more informative to me since they allow for equal probability of larger numbers in a logistic. I also tried narrower normal distributions but then those tend to pull the estimates toward 0... everything seems mildly informative to me)  
-    
-I'll wind up hiding most of the code here but I'm including it for now so you can see what I did...
 
 # Survey details
 Individuals unaffiliated with the research group piloted the questionnaire.  
@@ -91,7 +81,7 @@ output <- capture.output(burn <- brm(b_burn01 ~
 
 # Results
 ## Standardized results
-```{r}
+```{r, echo = FALSE}
 knitr::kable(fixef(burn), caption = "Table S1: Posterior estimates (standardized) for the fixed effects in the model. These values correspond to the posterior estimates shown in Figure 5 of the main body of the paper.")
 ```
 
@@ -100,31 +90,62 @@ knitr::kable(fixef(burn), caption = "Table S1: Posterior estimates (standardized
 
 # Plot of the predictions vs observations (standardized)
 
-![Figure S2: Predicted probability of prescribed burning, holding regional-level mean % tree cover constant at the average. Lines are the median posterior probability, bands are the 95% credibility intervals, and jittered points are the observed binary data (0/1).](/Users/hollynesbitt/Analyses/PHDScalarMismatches/figs/logistic1_bayesian_burn.png)
+![Figure S2: Predicted probability of prescribed burning, holding regional-level change in mean % tree cover constant at the average. Lines are the median posterior probability, bands are the 95% credibility intervals, and jittered points are the observed binary data (0/1).](/Users/hollynesbitt/Analyses/PHDScalarMismatches/figs/logistic1_bayesian_burn.png)
 
-![Figure S3: Predicted probability of prescribed burning, holding local-level mean % tree cover constant at the average. Lines are the median posterior probability, bands are the 95% credibility intervals, and jittered points are the observed binary data (0/1).](/Users/hollynesbitt/Analyses/PHDScalarMismatches/figs/logistic100_bayesian_burn.png)
+![Figure S3: Predicted probability of prescribed burning, holding local-level change in mean % tree cover constant at the average. Lines are the median posterior probability, bands are the 95% credibility intervals, and jittered points are the observed binary data (0/1).](/Users/hollynesbitt/Analyses/PHDScalarMismatches/figs/logistic100_bayesian_burn.png)
 
 # Diagnostics
 ## Posterior predictive check
-Generated data matches real data quite closely - indicates model is correctly specified (partly assessed w posterior predictive checks).
-```{r}
+Generated data matches real data quite closely - indicates model is correctly specified.  
+```{r, echo = FALSE}
 pp_check(burn, ndraws = 100) 
 ```
 
 ## Residual plots
-trees1_9020 - bands due to 0/1s, more error variation at lower values of x. This is partly because most values for trees1_9020 (see fig in plot showing tree cover over time) are near 0 but there are quite a few large values. I've tried adding an x2 variable and it doesn't fix the problem. I'm not sure how much it matters? It's clearly a terrible explanatory variable but needs to be in the model for the interaction effect.  
-```{r, include = FALSE}
-pp_check(burn, type = "error_scatter_avg_vs_x", size = 1.1, 
-         x = "trees1_9020")
+trees1_9020 - bands are due to 0/1s (top band is when burn = 1, bottom band is when burn = 0). There is more error variation at lower values of x. This is partly because most values for trees1_9020 are near 0 with a few large values (see Figure 3 in paper showing tree cover over time).  
+```{r, echo = FALSE}
+# pp_check(burn, type = "error_scatter_avg_vs_x", size = 1.1,
+#          x = "trees1_9020")
+
+pred = tidybayes::predicted_draws(burn, newdata=select(dat90_20_z, trees1_9020, trees100_9020, group_involve2, nrd, b_burn01))
+pred = pred %>% 
+    group_by(trees1_9020, trees100_9020, group_involve2, nrd) %>% 
+    summarise(.prediction = mean(.prediction)) %>% 
+    left_join(dat90_20_z)
+
+pred %>%
+    ggplot() +
+    geom_point(aes(x = trees1_9020, y = b_burn01 - .prediction, color = as_factor(b_burn01)), alpha = 0.5) +
+    labs(y = "Yobs - Predicted Yavg") +
+    guides(color=guide_legend(title="Obs presc burning"))
 ```
 
-trees100_9020 - bands due to 0/1s. As tree cover gets more severe at the regional level, the model gets both better (top band going to 0) and worse (bottom band going to -1) in equal measure (probably getting better at predicting 1s and worse at predicting 0s). I'm not sure what to do about this or how important it is. I think I'd prefer to caveat this rather than fight forever to get this pattern to disappear.
-```{r, include = FALSE}
-pp_check(burn, type = "error_scatter_avg_vs_x", size = 1.1, 
-         x = "trees100_9020")
+trees100_9020 - bands due to 0/1s (top band is when burn = 1, bottom band is when burn = 0). As tree cover change increases at the regional level, the model gets both better (top band going to 0) and worse (bottom band going to -1) in equal measure. In other words, the model gets better at predicting 1s (burning) and worse at predicting 0s (no burning) as change in regional tree cover increases. 
+```{r, echo = FALSE}
+# pp_check(burn, type = "error_scatter_avg_vs_x", size = 1.1,
+#          x = "trees100_9020")
+
+pred %>%
+    ggplot() +
+    geom_point(aes(x = trees100_9020, y = b_burn01 - .prediction, color = as_factor(b_burn01)), alpha = 0.5) +
+    labs(y = "Yobs - Predicted Yavg")+
+    guides(color=guide_legend(title="Obs presc burning"))
 ```
-interaction - a few wild cards for large values of x, maybe a bit of patterning but not too bad.
-```{r, include = FALSE}
+
+group - There's more spread in the residuals for producers who are not involved in groups compared to those who are involved in groups. This is partly because there are considerably more observations for those not involved in groups.
+```{r}
+# pp_check(burn, type = "error_scatter_avg_vs_x", size = 1.1, 
+#          x = "group_involve2")
+
+pred %>%
+    ggplot() +
+    geom_point(aes(x = group_involve2, y = b_burn01 - .prediction, color = as_factor(b_burn01)), alpha = 0.5) +
+    labs(y = "Yobs - Predicted Yavg")+
+    guides(color=guide_legend(title="Obs presc burning"))
+```
+  
+interaction - a few large values of x, a bit of patterning but not too bad.
+```{r, echo = FALSE}
 # To look at the residuals for the interaction effect, I frist tried the commented out code but it didn't work. So I generated a new column (dat90_20_z$trees100_9020* dat90_20_z$trees1_9020) and ran a new model treating it as a separate variable instead of an interaction effect. There's probably a better way to do this though. 
 
 # dat90_20_z$`trees100_9020:trees1_9020` <- interaction(dat90_20_z$trees100_9020, dat90_20_z$trees1_9020)
@@ -158,13 +179,19 @@ output <- capture.output(burn_int_col <- brm(b_burn01 ~
              family = bernoulli,
              sample_prior = T))
 
-pp_check(burn_int_col, type = "error_scatter_avg_vs_x", size = 1.1,
-         x = "interaction")
+# pp_check(burn_int_col, type = "error_scatter_avg_vs_x", size = 1.1,
+#          x = "interaction")
+
+pred %>%
+    ggplot() +
+    geom_point(aes(x = interaction, y = b_burn01 - .prediction, color = as_factor(b_burn01)), alpha = 0.5) +
+    labs(y = "Yobs - Predicted Yavg") +
+    guides(color=guide_legend(title="Obs presc burning"))
 ```
 
 ## Multicollinearity
 No problems.
-```{r}
+```{r, echo = FALSE}
 pairs(burn, pars = "b", 
       off_diag_args =  
           list(size = 0.5,
@@ -174,22 +201,30 @@ pairs(burn, pars = "b",
 # Model checks
 ## Chain convergence
 Chains converge.  
-Rhats are all 1.  
-Shrinks to 1, so used enough iterations.  
-Geweke diagnostic not greater than 1.96 in last iteration in chain.  
-
-```{r}
+```{r, echo = FALSE}
 plot(burn)
+```
+
+Rhats are all 1.  
+```{r, echoe = FALSE}
 summary(burn)
+```
+
+Shrinks to 1, so used enough iterations.  
+```{r, echo = FALSE}
 coda::gelman.plot(as.mcmc(burn)[, 1:5])
-coda::geweke.diag(as.mcmc(burn)[, 1:5])
+```
+
+Geweke diagnostic not greater than 1.96 in last iteration in chain.  
+```{r, echo = FALSE}
+#coda::geweke.diag(as.mcmc(burn)[, 1:5])
 coda::geweke.plot(as.mcmc(burn)[, 1:5])
 ```
 
 ### Chain convergence after doubling the number of iterations
-Yes, relative bias is less than 5%.
+Yes, relative bias is less than 5%, except for trees1_9020 which is bouncing around 0.
 
-```{r}
+```{r, echo = FALSE}
 output <- capture.output(burn_iter2 <- brm(b_burn01 ~
                        0 + Intercept +
                        trees100_9020 + 
@@ -206,27 +241,29 @@ output <- capture.output(burn_iter2 <- brm(b_burn01 ~
                    family = bernoulli,
                    sample_prior = T)) #saves priors for plots later
 
-coda::gelman.diag(as.mcmc(burn_iter2)[, 1:5])
-coda::gelman.plot(as.mcmc(burn_iter2)[, 1:5])
+#coda::gelman.diag(as.mcmc(burn_iter2)[, 1:5])
+#coda::gelman.plot(as.mcmc(burn_iter2)[, 1:5])
 
 round(100*((summary(burn_iter2)$fixed - summary(burn)$fixed) / summary(burn)$fixed), 3)[,"Estimate"] #relative bias is <5%
 ```
 
 ## Autocorrelation
 trees_100_9020 has some autocorrelation still after a few lags but eventually dissipates.
-```{r}
+```{r, echo = FALSE}
 bayesplot::mcmc_acf(burn)
 coda::autocorr.diag(as.mcmc(burn)[,1:5], lags = c(0, 1,2,3,4, 5, 10, 50))
 ```
 
 ## Does the posterior distribution histogram have enough information?
-Yes, peaked with smooth slopes.
-```{r}
+Yes, peaked with smooth slopes.  
+```{r, echo = FALSE}
 mcmc_plot(burn, type = "hist")
 mcmc_plot(burn_iter2, type = "hist")
 ```
+  
 ## Effect of priors
-```{r}
+Weakly informative priors (black), posteriors (blue)
+```{r, echo = FALSE}
 priors <- prior_draws(burn) %>%
     mutate(obs = (c(1:8000))) %>% 
     pivot_longer(!obs, names_to = "variable", values_to = "value")
@@ -244,89 +281,16 @@ ggplot() +
     xlim(-5, 5)
 ```
 
-
-
-## Is there a notable effect of the prior when compared with non-informative priors?
-Between 13 and 33% changes in effect size (except for trees1 - the percent change in the effect was large but the estimate is still very close to 0)
-```{r}
-prior_uninf <- c(set_prior("uniform(-2,2)", class = "b", coef = "group_involve2"),
-            set_prior("uniform(-3,3)", class = "b", coef = "trees1_9020"),
-            set_prior("uniform(-3,3)", class = "b", coef = "trees100_9020"),
-            set_prior("uniform(-4,4)", class = "b", coef = "trees100_9020:trees1_9020"),
-            set_prior("uniform(-5,5)", class = "b", coef = "Intercept"),
-            set_prior("exponential(1)", class = "sd"),
-            set_prior("exponential(1)", class = "sd", coef = "Intercept", group = "nrd"))
-
-# prior_uninf <- c(set_prior("uniform(-2,2)", class = "b", coef = "group_involve2"), 
-#             set_prior("normal(0, 2)", class = "b", coef = "trees1_9020"),
-#             set_prior("normal(0, 2)", class = "b", coef = "trees100_9020"),
-#             set_prior("normal(0, 2)", class = "b", coef = "trees100_9020:trees1_9020"),
-#             set_prior("normal(0, 2)", class = "b", coef = "Intercept"), 
-#             set_prior("exponential(1)", class = "sd"),
-#             set_prior("exponential(1)", class = "sd", coef = "Intercept", group = "nrd"))
-
-
-
-output <- capture.output(burn_uninf <- brm(b_burn01 ~
-                       0 + Intercept +
-                       trees100_9020 + 
-                       trees1_9020 +
-                       trees100_9020*trees1_9020 +
-                       group_involve2 +
-                       (1|nrd),
-                   data = dat90_20_z, 
-                   warmup = 1000, iter = 3000, 
-                   cores = 2, chains = 4, 
-                   control = list(adapt_delta = 0.96),
-                   prior = prior_uninf,
-                   seed = 123, 
-                   family = bernoulli,
-                   sample_prior = T))
-
-summary(burn)
-summary(burn_uninf)
-
-round(100*((summary(burn_uninf)$fixed - summary(burn)$fixed) / summary(burn)$fixed), 3)[,"Estimate"]
-```
-```{r}
-priors_uninf <- prior_draws(burn_uninf) %>%
-    mutate(obs = (c(1:8000))) %>% 
-    pivot_longer(!obs, names_to = "variable", values_to = "value")
-
-posteriors_uninf <- as.data.frame(burn_uninf) %>%
-    dplyr::select(b_Intercept:sd_nrd__Intercept) %>%
-    mutate(obs = (c(1:8000))) %>% 
-    pivot_longer(!obs, names_to = "variable", values_to = "value")
-    
-ggplot() +
-    geom_density(data = priors_uninf, aes(x = value)) +
-    geom_density(data = posteriors_uninf, aes(x = value), color = "blue") +
-    facet_wrap(~ variable) +
-    labs(title = "Prior Distribution vs. Posterior Distribution") +
-    xlim(-5, 5)
-```
-
-
-
-
 # Model fit
-## R2
-Not amazing, but not terrible.
-```{r}
-bayes_R2(burn)
-```
-## WAIC
-WAIC is much lower for burn than for the null model.
-```{r}
-output <- capture.output(burn0 <- update(burn, formula = b_burn01 ~ 1, refresh = 0, newdata = dat90_20_z))
-```
-```{r}
-waic(burn)
-waic(burn0)
-```
 ## LOO
-burn performs much better than burn0 according to leave-one-out cross-validation.
-```{r}
+All Pareto k estimates are good.
+```{r, echo = FALSE}
+loo(burn)
+```
+
+burn performs much better than burn0 (null) according to leave-one-out cross-validation.
+```{r, echo = FALSE}
+output <- capture.output(burn0 <- update(burn, formula = b_burn01 ~ 1, refresh = 0, newdata = dat90_20_z))
 loo0<-loo(burn0)
 loo1<-loo(burn, save_psis = T)
 loo_compare(loo0, loo1)
@@ -334,8 +298,8 @@ loo_compare(loo0, loo1)
 
 # Classification error
 ## Posterior classification accuracy
-Provides a generous perspective on model accuracy.
-```{r}
+Provides a generous perspective on model accuracy (68%).
+```{r, echo = FALSE}
 #predicted probabilities
 linpred <- posterior_linpred(burn)
 preds <- posterior_epred(burn)
@@ -351,9 +315,8 @@ dat90_20_z %>%
 ```
 
 ## LOO classification accuracy
-LOO provides a more conservative estimate of classification accuracy.  
-But there were only small differences in the posterior predictive probabilities and the LOO probabilities.
-```{r}
+LOO provides a more conservative estimate of classification accuracy (67%).  
+```{r, echo = FALSE}
 ## LOO predictive probabilities
 ploo <- loo::E_loo(preds, loo1$psis_object, type="mean", log_ratios = -log_lik(burn))$value
 ploo_01 <- as.integer(ploo >= 0.5)
@@ -364,13 +327,15 @@ dat90_20_z %>%
     rename(predicted = `...2`) %>%
     mutate(correct = if_else(b_burn01 == predicted, 1, 0)) %>%
     summarize(mean_correct = mean(correct))
-
+```
+But there were only small differences in the posterior predictive probabilities and the LOO probabilities.
+```{r, echo = FALSE}
 qplot(pred, ploo) 
 ```
 
 ## k-fold cross-validation
-k-fold cross-validation provides the most conservative estimate of model accuracy.
-```{r}
+k-fold cross-validation provides the most conservative estimate of model accuracy (67%).
+```{r, echo = FALSE}
 library(caret)
 library(glmmTMB)
 library(verification) #for roc.plot()
@@ -420,9 +385,6 @@ test_predict_df <-
     dplyr::select(fold_group, test_data, predict) %>% 
     unnest(c(test_data, predict))
 
-# determine appropriate classification threshold
-roc.plot(test_predict_df$b_burn01, test_predict_df$predict[,1])
-
 # Classify each prediction that's above a threshold as a 1, and all others as a 0
 threshold <- 0.5
 
@@ -439,9 +401,15 @@ test_predict_df %>%
               max = max(prop_correct))
 ```
 
+ROC curve indicates 0.5 is an appropriate classification threshold.  
+```{r, echo = FALSE}
+# determine appropriate classification threshold
+roc.plot(test_predict_df$b_burn01, test_predict_df$predict[,1])
+```
+
 ## Is the model better at predicting 0s or 1s?
 About the same at 0.5 threshold.
-```{r}
+```{r, echo = FALSE}
 test_predict_df %>% 
     mutate(pred_01 = if_else(predict[,1] > threshold, 1, 0),
            correct = if_else(b_burn01 == pred_01, 1, 0)) %>% 
@@ -464,22 +432,23 @@ test_predict_df %>%
 
 ```
 
-## Sensitivity analysis for threshold
-Average model accuracy peaks at a threshold of 0.5.  
-false negative rate = false positive rate = 0.36 at about 0.44 threshold.  
-If you were to actually use this to identify potential burners, you may want to reduce the false negative rate (so lower the threshold) so that you cast a wider net (unless you were resource limited, in which case you might want to reduce the false positive rate).
-```{r}
-threshold <-seq(0,1,0.05)
-fn<-c(NA,NA, 0.006, 0.04, 0.06,0.06,0.1,0.14, 0.27, 0.37,0.42,0.47,0.55,0.63,0.71,0.82,0.88,0.94, NA,NA,NA)
-fp<-c(NA,NA, 0.97, 0.80, 0.67,0.65,0.63, 0.58, 0.43, 0.32, 0.26,0.23,0.17,0.13,0.08,0.05,0.01,0.009,NA,NA, NA)
-acc_avg<-c(0.46, 0.46, 0.47, 0.55, 0.61,0.61,0.61,0.62, 0.64, 0.65, 0.67,0.66, 0.65, 0.65, 0.64, 0.59,0.59, 0.56, 0.55, 0.55, 0.55)
 
-tibble(threshold, fn, fp, acc_avg) %>%
-    pivot_longer(!threshold, 
-                 names_to = "stat",
-                 values_to = "rate") %>%
-    ggplot(aes(x = threshold, y = rate, group = stat)) +
-    geom_line(aes(col = stat))
+```{r, include = FALSE}
+## Sensitivity analysis for threshold
+# Average model accuracy peaks at a threshold of 0.5.  
+# false negative rate = false positive rate = 0.36 at about 0.44 threshold.  
+# If you were to actually use this to identify potential burners, you may want to reduce the false negative rate (so lower the threshold) so that you cast a wider net (unless you were resource limited, in which case you might want to reduce the false positive rate).
+# threshold <-seq(0,1,0.05)
+# fn<-c(NA,NA, 0.006, 0.04, 0.06,0.06,0.1,0.14, 0.27, 0.37,0.42,0.47,0.55,0.63,0.71,0.82,0.88,0.94, NA,NA,NA)
+# fp<-c(NA,NA, 0.97, 0.80, 0.67,0.65,0.63, 0.58, 0.43, 0.32, 0.26,0.23,0.17,0.13,0.08,0.05,0.01,0.009,NA,NA, NA)
+# acc_avg<-c(0.46, 0.46, 0.47, 0.55, 0.61,0.61,0.61,0.62, 0.64, 0.65, 0.67,0.66, 0.65, 0.65, 0.64, 0.59,0.59, 0.56, 0.55, 0.55, 0.55)
+# 
+# tibble(threshold, fn, fp, acc_avg) %>%
+#     pivot_longer(!threshold, 
+#                  names_to = "stat",
+#                  values_to = "rate") %>%
+#     ggplot(aes(x = threshold, y = rate, group = stat)) +
+#     geom_line(aes(col = stat))
 ```
 
 
