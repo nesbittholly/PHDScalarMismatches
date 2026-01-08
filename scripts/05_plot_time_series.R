@@ -2,7 +2,14 @@ library(tidyverse)
 
 # read in data and prep 
 ## reading in survey data
-dat<-read_csv("data/processed/ProducerDF_TreeCoverChangeCounty_NAsRemoved.csv")
+# dat<-read_csv("data/processed/ProducerDF_TreeCoverChangeCounty_NAsRemoved.csv")
+dat<-read_csv("data/processed/ProducerDF_TreeCoverChangeCounty_NRD.csv")
+
+dat <- 
+    na.omit(dat %>%
+                dplyr::select(uniqueID, trees1_9020, trees100_9020, b_burn01, b_remo01, group_involve2#, nrd
+                              #county2, eco, no_share, X, Y
+                )) #leaves 396 observations
 
 ## reading in vegetation cover data for each person in sample
 datv_1km<-read_csv("data/original/R3_NLCD2019_NE_EPSCoR_Tree_Percent_Mean_Buff_1km.csv")
@@ -36,9 +43,9 @@ p<-ggplot(datv, aes(x=Year, y=Tree_Perc_Mean*100))+
     scale_color_manual(values = c("darkolivegreen4", "black"), name ="")+
     facet_wrap(.~Buffer, scales="free", labeller = labeller(Buffer=facetlabs))+
     scale_x_continuous(expand = c(0,0))+
-    scale_y_continuous(lim=c(0,50), expand = c(0,0))+
+    #scale_y_continuous(lim=c(0,50), expand = c(0,0))+
     labs(x = "Year", y = "Mean percent tree cover (%)")+
-    theme_classic(base_size=20)+
+    theme_classic(base_size=18)+
     theme(axis.text=element_text(size=15, color="black"),
           panel.grid.minor = element_blank(),
           panel.grid.major = element_blank(),
@@ -47,7 +54,10 @@ p<-ggplot(datv, aes(x=Year, y=Tree_Perc_Mean*100))+
           strip.background = element_blank(),
           panel.spacing = unit(2, "lines"),
           plot.margin = unit(c(1,1,1,1), "cm"),
-          legend.position = c(0.9,0.85))
+          # legend.position = c(0.9,0.85))
+          legend.position = c(0.65,0.9),
+          legend.key.height = unit(0.01, "cm")) +
+    guides(colour = guide_legend(override.aes = list(alpha = 0.9)))
 #legend.position = "bottom")#+
 #guides(color=guide_legend(nrow=2))
 
@@ -58,4 +68,4 @@ cowplot::ggdraw()+
         c(0, 0.5),
         c(0.9, 0.9),
         size = 18)
-#ggsave("figs/time_series.png", width = 12, height=6, units="in", dpi=300, bg="white")
+ggsave("figs/time_series_ES2.png", width = 12, height=6, units="in", dpi=300, bg="white")

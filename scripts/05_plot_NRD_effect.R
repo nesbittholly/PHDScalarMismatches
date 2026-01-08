@@ -51,8 +51,17 @@ burn %>%
           # legend.key.size = unit(1, "cm")
     )
 
+burn %>%
+    tidybayes::spread_draws(b_Intercept, r_nrd[nrd,]) %>%
+    mutate(nrd_mean = b_Intercept + r_nrd) %>%
+    group_by(nrd)%>%
+    summarize(mean = mean(nrd_mean),
+              #max = max(nrd_mean),
+              qnt_2.5 = quantile(nrd_mean, probs = 0.025),
+              qnt_97.5  = quantile(nrd_mean, probs= 0.975),)
+
 #Upper Niobrara is in the NW corner
 #Lower Loup is pretty central, lower big blue is SE, and Central Platte is just south of Lower Loup
 #Twin Platte and Upper Loup have eliminated juniper cost share programs
 
-#ggsave("figs/nrd_effect.png", width = 8, height=5, units="in", dpi=300, bg="white")
+#ggsave("figs/nrd_effect_ES2.png", width = 8, height=5, units="in", dpi=300, bg="white")

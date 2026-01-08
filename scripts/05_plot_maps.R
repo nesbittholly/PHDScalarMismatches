@@ -101,3 +101,108 @@ ggplot() +
 
 #scales::viridis_pal(option = "G")(12)
 
+# multi panel version
+## prescribed burning
+a <- ggplot() +
+    geom_sf(data = ne, col="#2b2b2b", fill="white", lwd=0.3) +
+    geom_sf(data = nrds, col="#2b2b2b", fill="white", lwd=0.3) +
+    geom_sf(data = range_pts,
+            aes(shape = as.factor(b_burn01),
+                fill = as.factor(b_burn01),
+                color = as.factor(b_burn01))) +
+    coord_sf(crs = st_crs("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"), datum = NA) +
+    #scale_size_manual(values = c(1, 2.5), labels = c("No", "Yes")) +
+    scale_shape_manual(values = c(21,23), labels = c("No", "Yes")) +
+    scale_fill_manual(values = c("#57106e50", "#f98e0999"), labels = c("No", "Yes")) +
+    scale_color_manual(values = c("#00000090", "#000000"), labels = c("No", "Yes")) +
+    ggspatial::annotation_scale(location="bl", width_hint= 0.2,
+                                pad_x=unit(0.1, "in"),
+                                text_cex=.75) +
+    ggspatial::annotation_north_arrow(location="tr", which_north="true",
+                                      pad_x = unit(0.4, "in"),
+                                      height = unit(0.4, "in"),
+                                      width = unit(0.4, "in"),
+                                      style=ggspatial::north_arrow_fancy_orienteering()) +
+    labs(shape = "Prescribed\nburning",
+         fill = "Prescribed\nburning",
+         color = "Prescribed\nburning") +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          text = element_text(size = 11))
+a
+# for colours: https://waldyrious.net/viridis-palette-generator/
+
+## group involvement
+b <- ggplot() +
+    geom_sf(data = ne, col="#2b2b2b", fill="white", lwd=0.3) +
+    geom_sf(data = nrds, col="#2b2b2b", fill="white", lwd=0.3) +
+    geom_sf(data = range_pts,
+            aes(shape = as.factor(group_involve2),
+                fill = as.factor(group_involve2),
+                col = as.factor(group_involve2))) +
+    coord_sf(crs = st_crs("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"), datum = NA) +
+    scale_shape_manual(values = c(21,23), labels = c("No", "Yes")) +
+    scale_fill_manual(values = c("#fde72550", "#5ec96299"), labels = c("No", "Yes")) +
+    scale_color_manual(values = c("#00000090", "#000000"), labels = c("No", "Yes")) +
+    labs(shape = "Group\ninvolvement",
+         fill = "Group\ninvolvement",
+         col = "Group\ninvolvement") +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          text = element_text(size = 11))
+
+# regional level change
+c <- ggplot() +
+    geom_sf(data = ne, col="#2b2b2b", fill="white", lwd=0.3) +
+    geom_sf(data = nrds, col="#2b2b2b", fill="white", lwd=0.3) +
+    geom_sf(data = range_pts, alpha = 0.8, shape = 21,
+            aes(fill = trees100_9020*100)) +
+    coord_sf(crs = st_crs("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"), datum = NA) +
+    viridis::scale_fill_viridis(option="mako", #mako or magma?
+                                breaks = c(0, 2.5, 5.0, 7.5, 10), 
+                                labels = c("0.0 (Low)", "2.5", "5.0", "7.5", "10.0 (High)"))+
+    labs(fill = "Regional-level\nencroachment") +
+    guides(size = guide_legend(order = 1),
+           shape = guide_legend(override.aes = list(size = 2.5, fill = "#00000080"), order = 2)) +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          text = element_text(size = 11))
+
+# local level change
+d <- ggplot() +
+    geom_sf(data = ne, col="#2b2b2b", fill="white", lwd=0.3) +
+    geom_sf(data = nrds, col="#2b2b2b", fill="white", lwd=0.3) +
+    geom_sf(data = range_pts, alpha = 0.8, shape = 21,
+            aes(#shape = as.factor(group_involve2),
+                fill = trees1_9020*100)) +
+    coord_sf(crs = st_crs("+proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs"), datum = NA) +
+    viridis::scale_fill_viridis(option="mako")+#, #mako or magma?
+                                #breaks = c(0, 2.5, 5.0, 7.5, 10), 
+                                #labels = c("0.0 (Low)", "2.5", "5.0", "7.5", "10.0 (High)"))+
+    labs(#shape = "Group involvement",
+        fill = "Local-level\nencroachment") +
+    guides(size = guide_legend(order = 1),
+           shape = guide_legend(override.aes = list(size = 2.5, fill = "#00000080"), order = 2)) +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          text = element_text(size = 11))
+
+# plot together
+cowplot::plot_grid(a, b, c, d,
+                   ncol = 2,
+                   labels = c("A", "B", "C", "D"))
+
+#ggsave("figs/map_respondents_burn_ES2.png", width = 12, height=5, units="in", dpi=300, bg="white")
+    

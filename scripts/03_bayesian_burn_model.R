@@ -57,3 +57,5 @@ burn <- brm(b_burn01 ~
 prior_summary(burn)
 
 summary(burn)
+
+saveRDS(burn,"data/processed/brm_output_250905.rds") 

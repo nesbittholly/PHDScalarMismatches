@@ -22,7 +22,7 @@ post_ci <- post_mean %>%
         `97.5%` = quantile(.epred, 0.975), 
     ) %>%
     mutate(group = if_else(group_involve2 == 0, "Not involved in local groups", "Involved in local groups"), 
-           trees_level = if_else(trees100_9020 == -0.665, "Low change in regional-level mean % tree cover", "High change in regional-level mean % tree cover"),
+           trees_level = if_else(trees100_9020 == -0.665, "Low regional-level encroachment", "High regional-level encroachment"),
            trees100_group = paste0(trees_level, "-", group)) %>%
     mutate(trees1_unstand = trees1_9020*2*sd(dat90_20_nas$trees1_9020)*100)
 
@@ -55,7 +55,7 @@ post_ci %>%
     labs(color = "",
          fill = "",
          linetype="",
-         x = "Local-level change in mean % tree cover",
+         x = "Local-level encroachment",
          y = "Probability of prescribed burning") +
     scale_x_continuous(expand = expansion(mult = c(0,0.02))) +
     scale_y_continuous(expand = expansion(mult = c(0,0.02)))+
@@ -83,7 +83,7 @@ post_ci %>%
     # annotation_raster(raster1,  24,27, 0.86, 0.96) + #top-right grass/tree/grass
     # annotation_raster(raster2, 24.5,26.5, 0.88, 0.95)
 
-#ggsave("figs/interaction_effect_bayesian_burn.png", width = 7, height=7, units="in", dpi=300, bg="white")    
+#ggsave("figs/interaction_effect_bayesian_burn_ES2.png", width = 7, height=7, units="in", dpi=300, bg="white")    
     
 
 
