@@ -45,7 +45,7 @@ summary(no_burn)
 
 boxplot(burn$trees1_9020, no_burn$trees1_9020)
 t.test(burn$trees1_9020, no_burn$trees1_9020) # no statistical difference between burners and non-burners and their level of encroachment
-# but that doesn't really tell you anything.. because the non-burners might not be burning because they don't have encroachment (though this is not true because they do...)
+# non-burners might not be burning because they don't have encroachment (though we see that this is not true - they do have encroachment) 
 
 lm1 <- glm(b_burn01 ~ trees1_9020, data = dat)
 summary(lm1)
