@@ -29,11 +29,11 @@ We chose a 1 km radius because it results in an area of 3.14 km2 (776 acres), wh
 \pagebreak
 # Visualizations of the variables in the model
 ![Maps of respondent locations (points) across Nebraska’s Natural Resource Districts (polygons) showing whether respondents engaged in prescribed burning (A), were involved in groups (B), and the extent of regional- (C) and local-level encroachment (D) around them.](/Users/hollynesbitt/Analyses/PHDScalarMismatches/figs/map_respondents_burn_ES2.png)
-Figure S1: Maps of respondent locations (points) across Nebraska’s Natural Resource Districts (polygons) showing whether respondents engaged in prescribed burning (A), were involved in groups (B), and the extent of regional- (C) and local-level encroachment (D) around them.
+Figure A2.1: Maps of respondent locations (points) across Nebraska’s Natural Resource Districts (polygons) showing whether respondents engaged in prescribed burning (A), were involved in groups (B), and the extent of regional- (C) and local-level encroachment (D) around them.
 
 ![The number of respondents experiencing different combinations of local- and regional-level encroachment. The lighter the color, the more respondents experienced that particular combination.](/Users/hollynesbitt/Analyses/PHDScalarMismatches/figs/encroachment_heatmap_ES2.png)
 
-Figure S2: The number of respondents experiencing different combinations of local- and regional-level encroachment. The lighter the color, the more respondents experienced that particular combination.
+Figure A2.2: The number of respondents experiencing different combinations of local- and regional-level encroachment. The lighter the color, the more respondents experienced that particular combination.
 
 \pagebreak
 
@@ -117,7 +117,7 @@ output <- capture.output(burn <- brm(b_burn01 ~
 
 # NRD-level effects
 ![The effect of Natural Resources Districts (NRDs) on prescribed burning. NRDs are plotted in order from the northwest corner of the state (Upper Niobrara-White) to the southwest corner of the state (Nemaha) following the juniper encroachment gradient. NRDs with juniper cost share programs have a green density distribution and NRDs that have eliminated juniper cost share programs have a grey density distribution. The point is the median, the thick bars cover the middle 66% of the density distribution, and the thin bars cover the middle 95% of the density distribution.](/Users/hollynesbitt/Analyses/PHDScalarMismatches/figs/nrd_effect_ES2.png)
-Figure S3: The effect of Natural Resources Districts (NRDs) on prescribed burning. NRDs are plotted in order from the northwest corner of the state (Upper Niobrara-White) to the southwest corner of the state (Nemaha) following the juniper encroachment gradient. NRDs with juniper cost share programs have a green density distribution and NRDs that have eliminated juniper cost share programs have a grey density distribution. The point is the median, the thick bars cover the middle 66% of the density distribution, and the thin bars cover the middle 95% of the density distribution.
+Figure A2.3: The effect of Natural Resources Districts (NRDs) on prescribed burning. NRDs are plotted in order from the northwest corner of the state (Upper Niobrara-White) to the southwest corner of the state (Nemaha) following the juniper encroachment gradient. NRDs with juniper cost share programs have a green density distribution and NRDs that have eliminated juniper cost share programs have a grey density distribution. The point is the median, the thick bars cover the middle 66% of the density distribution, and the thin bars cover the middle 95% of the density distribution.
 
 \pagebreak
 ```{r, echo = FALSE}
@@ -134,7 +134,7 @@ Figure S3: The effect of Natural Resources Districts (NRDs) on prescribed burnin
 ```{r, echo = FALSE}
 pp_check(burn, ndraws = 100) 
 ```
-Figure S4: Posterior predictive check. The generated data (blue lines) match the real data closely (black thick line), indicating that the model is correctly specified.
+Figure A2.4: Posterior predictive check. The generated data (blue lines) match the real data closely (black thick line), indicating that the model is correctly specified.
 
 ```{r, echo = FALSE}
 # ## Residual plots
@@ -247,7 +247,7 @@ pairs(burn, pars = "b",
           list(size = 0.5,
                alpha = 0.25))[1:5,1:5]
 ```
-Figure S5: Scatter plots of generated data. Plots indicate that multicollinearity is not an issue.
+Figure A2.5: Scatter plots of generated data. Plots indicate that multicollinearity is not an issue.
 
 ## Marginal posterior distributions
 ```{r, echo = FALSE}
@@ -257,7 +257,7 @@ Figure S5: Scatter plots of generated data. Plots indicate that multicollinearit
 draws <- as_draws_df(burn)
 bayesplot::mcmc_hist(burn, pars = vars(c(starts_with("b_"), "sd_nrd__Intercept")))
 ```
-Figure S6: Histograms showing the marginal posterior distributions. Histograms are unimodal and centered, indicating that model estimates match the distribution. Distribution spread, indicating estimate uncertainty, is reasonable.
+Figure A2.6: Histograms showing the marginal posterior distributions. Histograms are unimodal and centered, indicating that model estimates match the distribution. Distribution spread, indicating estimate uncertainty, is reasonable.
 
 ## Chain convergence
 ```{r, echo = FALSE}
@@ -267,7 +267,7 @@ Figure S6: Histograms showing the marginal posterior distributions. Histograms a
 draws <- as_draws_df(burn)
 bayesplot::mcmc_trace(burn, pars = vars(c(starts_with("b_"), "sd_nrd__Intercept")))
 ```
-Figure S7: Caterpillar plots of model runs. Caterpillar plots indicate that chains converged.
+Figure A2.7: Caterpillar plots of model runs. Caterpillar plots indicate that chains converged.
 
 
  
@@ -364,7 +364,7 @@ Figure S7: Caterpillar plots of model runs. Caterpillar plots indicate that chai
 # All Pareto k estimates are good.  
 # loo(burn)
 ```
-Table S1: Model fit and classification accuracy. n = sample size, ELPD = expected log predictive density,  LOO = leave-one-out cross validation.
+Table A2.1: Model fit and classification accuracy. n = sample size, ELPD = expected log predictive density,  LOO = leave-one-out cross validation.
 ```{r, echo = FALSE}
  
 # output <- capture.output(burn0 <- update(burn, formula = b_burn01 ~ 1, refresh = 0, newdata = dat90_20_z))
@@ -558,7 +558,7 @@ Index Mundi. 2018. “Nebraska Average Commute Time by County.” 2018. https://
   
 Marshall, Nadine A., Steve Crimp, Matt Curnock, Murni Greenhill, Geoff Kuehne, Zoe Leviston, and Jackie Ouzman. 2016. “Some Primary Producers Are More Likely to Transform Their Agricultural Practices in Response to Climate Change than Others.” Agriculture, Ecosystems & Environment 222 (April):38–47.  
   
-USDA NASS. 2021. “Farms and Land in Farms: 2021 Summary.” 2021. https://usda.library.cornell.edu/concern/publications/5712m6524.  
+USDA NASS. 2022. “Farms and Land in Farms: 2021 Summary.” https://usda.library.cornell.edu/concern/publications/5712m6524.  
 
 
 
