@@ -1,4 +1,5 @@
 #run 03_bayesian_burn_model.R first
+burn <- readRDS("data/processed/brm_output_250905.rds") 
 
 # generating data, only fixed effects variables
 min(dat90_20_z$trees100_9020)
